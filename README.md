@@ -12,6 +12,14 @@ The code may be used in order to reproduce the analysis. The file
 *experiment_settings.txt* allows to specify the parameters that you may
 want to use for simulate the values.
 
+The code works fine under:
+* Python 2.7
+
+You will also need:
+
+* numpy (version 1.9.2)
+* scipy (version 0.15.1)
+
 The script *experiment.py* can be modified if you want to change the name of
 the output file. It is recommended to run many experiments in parallel in order
 to save time.
