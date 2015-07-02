@@ -1,16 +1,16 @@
 SSPSC vs StSI
 =============
 
-This python scripts where used in the simulations of the study *Demographic
-inference using genetic data from a single individual: separating population
-size variation from population structure* (see the original paper
+These python scripts were used to perform the simulations described in our 
+paper *Demographic inference using genetic data from a single individual: 
+separating population size variation from population structure* 
+(see the original paper
   <a href=http://www.sciencedirect.com/science/article/pii/S0040580915000581>
-  Mazet O. et al.</a> or a
+  Mazet O., Rodríguez W., Chikhi L. (2015)</a> or a
   <a href=http://arxiv.org/abs/1412.1243> Preprint </a> for theoretical details).
 
-The code may be used in order to reproduce the analysis. The file
-*experiment_settings.txt* allows to specify the parameters that you may
-want to use for simulate the values.
+The code may be used in order to reproduce the analyses performed in the paper
+and in the Supplementary Materials. 
 
 The code works fine under:
 * Python 2.7
@@ -20,9 +20,14 @@ You will also need:
 * numpy (version 1.9.2)
 * scipy (version 0.15.1)
 
+The file *experiment_settings.txt* allows to specify the parameters that you may
+want to use for simulate the values.
+
 The script *experiment.py* can be modified if you want to change the name of
 the output file. It is recommended to run many experiments in parallel in order
-to save time.
+to save time. To make an experiment just do 
+
+*./experiments.py*
 
 One single experiment produce two files. One contains the simulated T2 values
 (i.e. the values of the coalescence times of two individuals under the actual
