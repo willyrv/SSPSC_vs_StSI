@@ -3,11 +3,11 @@ SSPSC vs StSI
 
 These python scripts were used to perform the simulations described in our 
 paper *Demographic inference using genetic data from a single individual: 
-separating population size variation from population structure* 
-(see the original paper
+separating population size variation from population structure* published in Theoretical Population and Biology.
+You can fin the original paper at the following link:
   <a href=http://www.sciencedirect.com/science/article/pii/S0040580915000581>
-  Mazet O., Rodríguez W., Chikhi L. (2015)</a> or a
-  <a href=http://arxiv.org/abs/1412.1243> Preprint </a> for theoretical details).
+  Mazet O., Rodríguez W., Chikhi L. (2015)</a> and a preprint in biorxiv 
+  <a href=http://arxiv.org/abs/1412.1243>  </a> see these links for theoretical details).
 
 The code may be used in order to reproduce the analyses performed in the paper
 and in the Supplementary Materials. 
