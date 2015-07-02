@@ -1,0 +1,18 @@
+# This is the configuration file
+
+# Select the distribution used for generating the values. Dont forget to set the parameters. For example, for T2_SSPSC with parameters 
+#alpha=[9, 10, 11] and T=[1, 2, 3] , you should write
+# 1
+# 9, 10, 11
+# 1, 2, 3
+#
+# 1 - T2_SSPSC. (alpha, T)
+# 2 - T2_StSI. (n, M)
+1
+2, 4, 10, 20, 50, 100
+0.1, 0.2, 0.5, 1, 2, 5
+
+# This is a list of parameters containing the number of values to generate in each experiment. For example, for making the experiment two times, the # first with 100 values and the second with 1000 values, you should write
+# 100, 1000
+40, 100, 200, 400
+
