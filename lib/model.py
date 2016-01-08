@@ -72,7 +72,10 @@ class T2_SSPSC:
         """
         This function returns the likelihood of obs. Here obs is a vector of observations
         """
-        [alpha, T] = [self.alpha, self.T]
+        if alpha == '':
+            alpha = self.alpha
+        if T == '':
+            T = self.T
         if (alpha<=0) or (T<0):
             return -sys.maxint
         temp = 0
@@ -129,7 +132,7 @@ class T2_SSPSC:
         """
         This method computes the value of alpha for the exact computation
         of the likelihood. 
-        obs should be an decreasing ordered list and at least
+        obs should be a decreasing ordered list and at least
         obs[0]>t
         """
         n_temp = 0
@@ -145,7 +148,7 @@ class T2_SSPSC:
         """
         This method computes the value of alpha for the exact computation
         of the likelihood when using the right limit formulae 
-        obs should be an decreasing ordered list and at least
+        obs should be a decreasing ordered list and at least
         obs[0]>t
         """
         n_temp = 0
@@ -179,6 +182,57 @@ class T2_SSPSC:
                 best_alpha = alpha_i_right
                 best_llk = llk_i_right
         return [best_alpha, best_t, best_llk]
+        
+    def exact_maxllk_integer(self, obs):
+        """
+        Do the same algorithm that 'exact_maxllk' but considering that alpha
+        is integer. The algorithm is roughly the same due to the form of the 
+        likelihood function (i.e. for constant values of T, the function 
+        of alpha is convex)
+        """
+        obs.sort(reverse=True)
+        # Computing the first value
+        best_t = obs[0]
+        best_alpha = 1 # The likelihood function doesn't depend on alpha beyond the biggest T
+        sup_llk = self.fast_log_likelihood(obs, best_alpha, best_t)
+        best_llk = sup_llk # The function is continuous in T = max(obs)
+        for ti in obs[1:]+[0]:
+            # The maximum of a function is over one of the observed values of 
+            # coalescence times. 
+            # Moreover, for constant values of T, the likelihood function in 
+            # convex. We get then the better alpha that is integer
+            alpha_i_left_real = self.compute_alpha(obs, ti)
+            (alpha_inf, ignore) = divmod(alpha_i_left_real, 1)
+            alpha_sup = alpha_inf + 1
+            llk_inf = self.fast_log_likelihood(obs, alpha_inf, ti)
+            llk_sup = self.fast_log_likelihood(obs, alpha_sup, ti)
+            if llk_inf > llk_sup:
+                alpha_i_left = alpha_inf
+            else:
+                alpha_i_left = alpha_sup
+            
+            alpha_i_right_real = self.compute_right_alpha(obs, ti)
+            (alpha_inf, ignore) = divmod(alpha_i_right_real, 1)
+            (alpha_inf, ignore) = divmod(alpha_i_right_real, 1)
+            alpha_sup = alpha_inf + 1
+            llk_inf = self.fast_log_likelihood(obs, alpha_inf, ti)
+            llk_sup = self.fast_log_likelihood(obs, alpha_sup, ti)
+            if llk_inf > llk_sup:
+                alpha_i_right = alpha_inf
+            else:
+                alpha_i_right = alpha_sup
+            
+            llk_i_left = self.fast_log_likelihood(obs, alpha_i_left, ti)
+            llk_i_right = self.right_limit_fast_log_likelihood(obs, alpha_i_right, ti)
+            if llk_i_left > best_llk:
+                best_t = ti
+                best_alpha = alpha_i_left
+                best_llk = llk_i_left
+            if llk_i_right > best_llk:
+                best_t = ti
+                best_alpha = alpha_i_right
+                best_llk = llk_i_right
+        return [best_alpha, best_t, best_llk]        
 
 class T2_StSI:
     """
@@ -346,6 +400,28 @@ class T2_StSI:
                 return [n_left, M_found, sol_left]
             else:
                 return [n_right, M_found, sol_right]
+                
+class T2_StSId(T2_StSI):
+    def __init__(self, n=10, M=0.1):
+        T2_StSI.__init__(self, n, M)
+        [A, B, a, alpha, beta, E, AplusB, AminusB] = \
+        T2_StSI.compute_constants(self, n, M)
+        [self.a, self.alpha, self.beta] = [a, alpha, beta]
+        self.gamma = np.true_divide(M, n-1)
+        self.c = np.true_divide(self.gamma, beta-alpha)
+    
+    def pdf(self, t):
+        [alpha, beta, c] = [self.alpha, self.beta, self.c]
+        return (t>0)*(np.exp(-alpha*t) - np.exp(-beta*t))*c
+    
+    def cdf(self, t):
+        [alpha, beta] = [self.alpha, self.beta]
+        return (t>0)*(1 - np.true_divide(alpha*np.exp(-beta*t) - 
+                        beta*np.exp(-alpha*t), alpha-beta))
+    
+    def simulate_values(self, nb_of_observations):
+        print("not implemented")
+        return False
 
 # The two next clases are for comparing the simulated values produced by
 # T2_SSPSC and T2_StSI with the equivalent ms commands. Here we have to take
@@ -451,6 +527,7 @@ class Comparator:
             type_of_variable = 'T2_StSI'
             real_params = (n, M).__str__()
         number_of_observations = int(options[2])
+        alpha_integer = options[3]
         
         # We are going to simulate "number_of_observations" independent values. Then we use a half of that values for parameters estimation and the other half for the KS-test
         
@@ -462,7 +539,10 @@ class Comparator:
 
         # Estimating parameters of both models and doing a KS test
         B = T2_SSPSC() # We initialize a variable with default parameters
-        [alpha, T, ll_fittedB] = B.exact_maxllk(obs_estim)
+        if int(alpha_integer) == 0:
+            [alpha, T, ll_fittedB] = B.exact_maxllk(obs_estim)
+        else:
+            [alpha, T, ll_fittedB] = B.exact_maxllk_integer(obs_estim)
         fittedB = T2_SSPSC(alpha, T)
         KS_fittedB = kstest(obs_test, fittedB.cdf)
         pvalue_fittedB = KS_fittedB[1]
@@ -488,7 +568,7 @@ class Comparator:
         '''
         output_text = 'Original_variable | real_parameters | number_of_observations | log-likelihood_of_real_params | Estim_params_T2_SSPSC | log-likelihood_T2_SSPSC | p-value_T2_SSPSC | Estim_params_T2_StSI | log-likelihood_T2_StSI | p-value_T2_StSI | AIC_selected_model | AIC_relative_prob\n'
         observations_text = ''
-        single_exp_options = [options[0], '', '']
+        single_exp_options = [options[0], '', '', options[4]]
         list_param1 = options[1].split(',')
         list_param2 = options[2].split(',')
         list_number_of_values = options[3].split(',')
